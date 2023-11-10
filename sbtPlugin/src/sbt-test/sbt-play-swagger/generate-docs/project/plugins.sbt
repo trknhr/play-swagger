@@ -1,4 +1,4 @@
-logLevel in update := sbt.Level.Warn
+update / logLevel := sbt.Level.Warn
 
 addSbtPlugin("com.typesafe.sbt" %% "sbt-native-packager" % "1.3.2")
 addSbtPlugin("com.typesafe.play" %% "sbt-plugin" % "2.8.16")
@@ -11,4 +11,4 @@ addSbtPlugin("com.typesafe.play" %% "sbt-plugin" % "2.8.16")
   else addSbtPlugin("io.github.play-swagger" %% "sbt-play-swagger" % pluginVersion)
 }
 
-libraryDependencies += "io.spray" %% "spray-json" % "1.3.3"
+libraryDependencies += "io.spray" %% "spray-json" % "1.3.6"
