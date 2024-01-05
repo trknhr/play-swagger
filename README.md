@@ -78,9 +78,19 @@ You can find the setup in the example project as well.
 
 #### Step 1
 
-For play 2.8, Scala 2.13.x and Scala 2.12.x please use
+1. For play 2.8, Scala 2.13.x and Scala 2.12.x please use
 ```scala
-addSbtPlugin("io.github.play-swagger" % "sbt-play-swagger" % "1.4.4")
+addSbtPlugin("io.github.play-swagger" % "sbt-play-swagger" % "1.6.1")
+```
+
+2. For play 2.9, Scala 2.13.x please use (Code is in branch 1.7.0)
+```scala
+addSbtPlugin("io.github.play-swagger" % "sbt-play-swagger" % "1.7.0")
+```
+
+3. For play 3.0, Scala 2.13.x please use (Code is in branch 2.0.0 and scala 3 is not supported)
+```scala
+addSbtPlugin("io.github.play-swagger" % "sbt-play-swagger" % "2.0.0")
 ```
 
 Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root project like
@@ -136,7 +146,7 @@ Alternatively you can use swagger-ui webjar and have you play app serving the sw
 
 The query parameter `url` is disabled in 4.1.3 and later versions. ([GHSA-qrmm-w75w-3wpx](https://github.com/swagger-api/swagger-ui/security/advisories/GHSA-qrmm-w75w-3wpx))
 ```scala
-libraryDependencies += "org.webjars" % "swagger-ui" % "4.11.1"
+libraryDependencies += "org.webjars" % "swagger-ui" % "5.10.3"
 ```
 
 Copy the `index.html` and `swagger-initializer.js` generated in `target/${project}/public/lib/main/swagger-ui/` and modify the js files as follows to create Swagger-UI can be used easily.
@@ -327,37 +337,41 @@ GET     /message        controllers.AsyncController.parametric
 The generated schema name, however, cannot contain `[`, `]` or `,` which appear in type argument lists in Scala. 
 Therefore, there's a default `OutputTransformer` (`ParametricTypeNamesTransformerSpec`) which normalises the name into the URL-compliant form. 
 The definitions output would then look like:
-```json
+```json5
 {
-  "components" : {
-    "schemas" : {
-      "models.AnotherOne" : {
-        "properties" : {
-          "someString" : {
-            "type" : "string"
+  "components": {
+    "schemas": {
+      "models.AnotherOne": {
+        "properties": {
+          "someString": {
+            "type": "string"
           }
         },
-        "required" : [ "someString" ]
+        "required": [
+          "someString"
+        ]
       },
-      "models.Foo-models.AnotherOne" : {
-        "properties" : {
-          "payload" : {
-            "$ref" : "#/components/schemas/models.AnotherOne"
+      "models.Foo-models.AnotherOne": {
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/models.AnotherOne"
           }
         },
-        "required" : [ "payload" ]
+        "required": [
+          "payload"
+        ]
       }
     }
   },
-...
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/models.Foo-models.AnotherOne"
-                }
-              }
-            }
-...
+  // ...
+  "content": {
+    "application/json": {
+      "schema": {
+        "$ref": "#/components/schemas/models.Foo-models.AnotherOne"
+      }
+    }
+  }
+  //...
 }
 ```
 
@@ -439,7 +453,7 @@ Of course, writing `schema` etc. will also be embedded.
 
 Generated `swagger.json`.
 
-```json
+```json5
 {
   "paths": {
     "/": {
@@ -457,7 +471,7 @@ Generated `swagger.json`.
       }
     }
   }
-  ......
+  // ......
 }
 ```
 
@@ -480,9 +494,9 @@ example `home.yml` file.
 
 ```yaml
 summary: Top Page
-  responses:
-    200:
-      description: "success"
+responses:
+  200:
+    description: "success"
 ```
 
 #### Duplicate operationId?
