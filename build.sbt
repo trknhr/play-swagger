@@ -2,7 +2,6 @@ ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 ThisBuild / sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 ThisBuild / publish / skip := true
 ThisBuild / scalafixDependencies ++= Seq(
-  "com.github.liancheng" %% "organize-imports" % "0.6.0",
   "com.sandinh" %% "scala-rewrites" % "1.1.0-M1",
   "net.pixiv" %% "scalafix-pixiv-rule" % "4.5.3",
   "com.github.xuwei-k" %% "scalafix-rules" % "0.3.1",
