@@ -1,7 +1,7 @@
 import spray.json._
 import DefaultJsonProtocol._
 
-logLevel in update := sbt.Level.Warn
+update / logLevel := sbt.Level.Warn
 
 enablePlugins(PlayScala, SwaggerPlugin)
 
@@ -9,7 +9,7 @@ name := "app"
 
 version := "1.0.1-BETA1"
 
-scalaVersion := "2.12.18"
+scalaVersion := "2.12.19"
 
 swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 
@@ -140,7 +140,7 @@ TaskKey[Unit]("check") := {
           s"Result > $resultLine"
     }.mkString("\n")
 
-    val left = ep.takeRight(ep.size - rs.size).mkString("\n")
+    val left = ep.takeRight(ep.length - rs.length).mkString("\n")
 
     sys.error(
       s"""Swagger.json is off.
