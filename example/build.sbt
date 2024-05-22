@@ -12,7 +12,7 @@ ThisBuild / scalafixDependencies ++= Seq(
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin) //enable plugin
 
-scalaVersion := "2.12.18"
+scalaVersion := "2.12.19"
 
 libraryDependencies ++= Seq(
   jdbc,
