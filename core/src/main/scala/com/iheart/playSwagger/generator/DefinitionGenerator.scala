@@ -2,7 +2,7 @@ package com.iheart.playSwagger.generator
 
 import scala.collection.JavaConverters
 import scala.meta.internal.parsers.ScaladocParser
-import scala.meta.internal.{Scaladoc ⇒ iScaladoc}
+import scala.meta.internal.{Scaladoc => iScaladoc}
 import scala.reflect.runtime.universe._
 
 import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
