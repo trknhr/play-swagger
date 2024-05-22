@@ -42,13 +42,13 @@ lazy val playSwagger = project.in(file("core"))
         "com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3",
         "org.scalameta" %% "scalameta" % "4.8.15",
         "net.steppschuh.markdowngenerator" % "markdowngenerator" % "1.3.1.1",
-        "joda-time" % "joda-time" % "2.12.6" % Test,
+        "joda-time" % "joda-time" % "2.12.7" % Test,
         "com.google.errorprone" % "error_prone_annotations" % "2.25.0" % Test
       ),
     libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
     addCompilerPlugin("com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3"),
     scalaVersion := scalaV,
-    crossScalaVersions := Seq(scalaVersion.value, "2.13.13"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.14"),
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -68,7 +68,7 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
   .settings(
     publish / skip := false,
     Publish.coreSettings,
-    addSbtPlugin("com.typesafe.sbt" %% "sbt-native-packager" % "1.3.25" % Provided),
+    addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.10.0" % Provided),
     addSbtPlugin("com.github.sbt" %% "sbt-web" % "1.5.5" % Provided)
   )
   .enablePlugins(BuildInfoPlugin, SbtPlugin)
