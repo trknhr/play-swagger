@@ -14,7 +14,7 @@ addCommandAlias(
   ";set ThisBuild / version := \"0.0.1-EXAMPLE\"; +publishLocal"
 )
 
-lazy val scalaV = "2.12.19"
+lazy val scalaV = "2.12.20"
 
 lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
