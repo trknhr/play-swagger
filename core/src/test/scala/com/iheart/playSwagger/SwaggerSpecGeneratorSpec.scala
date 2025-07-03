@@ -720,6 +720,12 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (addTrackJson \ "operationId").as[String] ==== "LiveMeta.addPlayedTracks"
     }
 
+    "generate operationId from path" >> {
+      lazy val json = SwaggerSpecGenerator(usePathForOperationId = true).generate("test.routes").get
+      lazy val addTrackJson = (json \ "paths" \ "/api/station/playedTracks" \ "post").as[JsObject]
+      (addTrackJson \ "operationId").as[String] ==== "postApiStationPlayedTracks"
+    }
+
     "should maintain route file order" >> {
       // use students routes
 

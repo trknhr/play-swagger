@@ -42,4 +42,10 @@ trait SwaggerKeys {
       "embedScaladoc",
       "Output schema description using scaladoc of case class"
     )
+
+  val swaggerUsePathForOperationId: SettingKey[Boolean] =
+    SettingKey[Boolean](
+      "swaggerUsePathForOperationId",
+      "Use path to generate operationId"
+    )
 }

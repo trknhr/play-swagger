@@ -91,7 +91,8 @@ final case class SwaggerSpecGenerator(
     swaggerPlayJava: Boolean = false,
     apiVersion: Option[String] = None,
     operationIdFully: Boolean = false,
-    embedScaladoc: Boolean = false
+    embedScaladoc: Boolean = false,
+    usePathForOperationId: Boolean = false
 )(implicit cl: ClassLoader) {
 
   private val parameterWriter = new SwaggerParameterWriter(swaggerV3)
@@ -331,7 +332,8 @@ final case class SwaggerSpecGenerator(
         case StaticPart(value) => value
       }.mkString
       val method = route.verb.value.toLowerCase
-      Some(fullPath(path, inRoutePath) -> Json.obj(method -> endPointSpec(route, tag)))
+      val fullPathString = fullPath(path, inRoutePath)
+      Some(fullPathString -> Json.obj(method -> endPointSpec(route, tag, fullPathString)))
     }
   }
 
@@ -349,7 +351,7 @@ final case class SwaggerSpecGenerator(
   }
 
   // Multiple routes may have the same path, merge the objects instead of overwriting
-  private def endPointSpec(route: Route, tag: Option[String]) = {
+  private def endPointSpec(route: Route, tag: Option[String], path: String) = {
     // controller から parameter object の作成
     val paramsFromController = {
       val pathParams = route.path.parts.collect {
@@ -418,9 +420,11 @@ final case class SwaggerSpecGenerator(
     val parameterJson = if (mergedParams.value.nonEmpty) Json.obj("parameters" -> mergedParams) else Json.obj()
 
     // コントローラー名とメソッド名、もしくはメソッド名のみから operationId を取得する
-    val operationId = Json.obj(
-      "operationId" -> (if (operationIdFully) s"${route.call.controller}.${route.call.method}" else route.call.method)
-    )
+    val operationId = if (usePathForOperationId) { // Check for the new flag
+      Json.obj("operationId" -> generateOperationIdFromPath(route.verb.value, path))
+    } else {
+      Json.obj("operationId" -> (if (operationIdFully) s"${route.call.controller}.${route.call.method}" else route.call.method))
+    }
 
     // operationId, tag, parameter object, コメントから生成されたその他の情報をマージする
     val rawPathJson = operationId ++ tag.fold(Json.obj()) { t =>
@@ -445,4 +449,31 @@ final case class SwaggerSpecGenerator(
   private def tryParseJson(comment: String): Option[JsObject] =
     if (comment.startsWith("{")) Some(Json.parse(comment).as[JsObject]) else None
 
+  private def generateOperationIdFromPath(method: String, path: String): String = {
+    // Helper function to convert a string to UpperCamelCase (PascalCase)
+    def toUpperCamelCase(s: String): String = {
+      s.split(Array('_', '-')).filter(_.nonEmpty).map { p =>
+        p.head.toUpper + p.tail
+      }.mkString
+    }
+
+    val pathParts = path
+      .stripPrefix("/")
+      .split('/')
+      .filter(_.nonEmpty)
+      .map { part =>
+        if (part.startsWith("{") && part.endsWith("}")) {
+          // e.g., {user_id} -> ByUserId
+          val paramName = part.stripPrefix("{").stripSuffix("}")
+          "By" + toUpperCamelCase(paramName)
+        } else {
+          // e.g., user_profiles -> UserProfiles
+          toUpperCamelCase(part)
+        }
+      }
+
+    // Combine the lowercase method with the path parts
+    // e.g., GET /users/{user_id}/posts -> "getUsersByUserIdPosts"
+    method.toLowerCase + pathParts.mkString
+  }
 }
