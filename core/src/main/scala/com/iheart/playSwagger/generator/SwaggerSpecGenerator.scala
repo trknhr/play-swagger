@@ -353,29 +353,28 @@ final case class SwaggerSpecGenerator(
   // Multiple routes may have the same path, merge the objects instead of overwriting
   private def endPointSpec(route: Route, tag: Option[String], path: String) = {
     // controller から parameter object の作成
-    val paramsFromController = {
-      val pathParams = route.path.parts.collect {
-        case d: DynamicPart => d.name
-      }.toSet
+    // val paramsFromController = {
+    //   val pathParams = route.path.parts.collect {
+    //     case d: DynamicPart => d.name
+    //   }.toSet
 
-      val params = for {
-        paramList <- route.call.parameters.toSeq
-        param <- paramList
-        if param.fixed.isEmpty && !param.isJavaRequest // Removes parameters the client cannot set
-      } yield swaggerParameterMapper.mapParam(param, None)
+    //   val params = for {
+    //     paramList <- route.call.parameters.toSeq
+    //     param <- paramList
+    //     if param.fixed.isEmpty && !param.isJavaRequest // Removes parameters the client cannot set
+    //   } yield swaggerParameterMapper.mapParam(param, None)
 
-      JsArray(params.flatMap { p =>
-        val jos: List[JsObject] = p match {
-          case gsp: GenSwaggerParameter => List(parameterWriter.genParamWrites.writes(gsp))
-          case csp: CustomSwaggerParameter => parameterWriter.customParamWrites(csp)
-        }
+    //   JsArray(params.flatMap { p =>
+    //     val jos: List[JsObject] = p match {
+    //       case gsp: GenSwaggerParameter => List(parameterWriter.genParamWrites.writes(gsp))
+    //       case csp: CustomSwaggerParameter => parameterWriter.customParamWrites(csp)
+    //     }
 
-        val in = if (pathParams.contains(p.name)) "path" else "query"
-        val enhance = Json.obj("in" -> in)
-        jos.map(enhance ++ _)
-      })
-    }
-
+    //     val in = if (pathParams.contains(p.name)) "path" else "query"
+    //     val enhance = Json.obj("in" -> in)
+    //     jos.map(enhance ++ _)
+    //   })
+    // }
     // コメントから parameter object の作成
     val jsonFromComment = {
       val comments = route.comments.map(_.comment)
@@ -403,6 +402,36 @@ final case class SwaggerSpecGenerator(
           case v => JsObject(Seq(refKey -> v))
         })
       }
+    }
+
+    // コントローラーの引数からパラメータを生成する前に、コメントにパラメータ定義があるかチェック
+    val commentHasParameters = jsonFromComment.flatMap(jc => (jc \ "parameters").asOpt[JsArray]).exists(_.value.nonEmpty)
+    // controller から parameter object の作成
+    val paramsFromController = if (commentHasParameters) {
+      // コメントで定義されているので、ここでは空の配列を返す。
+      // これにより、コメントの内容が唯一のパラメータ定義となる。
+      JsArray()
+    } else {
+      val pathParams = route.path.parts.collect {
+        case d: DynamicPart => d.name
+      }.toSet
+
+      val params = for {
+        paramList <- route.call.parameters.toSeq
+        param <- paramList
+        if param.fixed.isEmpty && !param.isJavaRequest // Removes parameters the client cannot set
+      } yield swaggerParameterMapper.mapParam(param, None)
+
+      JsArray(params.flatMap { p =>
+        val jos: List[JsObject] = p match {
+          case gsp: GenSwaggerParameter => List(parameterWriter.genParamWrites.writes(gsp))
+          case csp: CustomSwaggerParameter => parameterWriter.customParamWrites(csp)
+        }
+
+        val in = if (pathParams.contains(p.name)) "path" else "query"
+        val enhance = Json.obj("in" -> in)
+        jos.map(enhance ++ _)
+      })
     }
 
     val paramsFromComment = jsonFromComment.flatMap(jc => (jc \ "parameters").asOpt[JsArray]).map { params =>

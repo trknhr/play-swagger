@@ -31,3 +31,13 @@ GET     /zoo/zone/:zid/animals/:aid               controllers.Animals.search(zid
 #          $ref: '#/components/schemas/com.iheart.playSwagger.Attribute'
 ###
 POST     /:pid/playedAttributes           controllers.Player.attribute(pid)
+
+###
+# summary: action with commented params
+# parameters:
+#   - in: query
+#     name: p1_comment
+#     schema:
+#       type: string
+###
+GET         /commented-params                   controllers.Player.actionWithParams(p1: String, p2: Int)

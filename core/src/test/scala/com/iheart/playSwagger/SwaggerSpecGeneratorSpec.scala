@@ -1,12 +1,12 @@
 package com.iheart.playSwagger
 
 import java.time.LocalDate
-
 import com.iheart.playSwagger.RefinedTypes.{Age, Albums, SpotifyAccount}
 import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.generator.SwaggerSpecGenerator
 import org.specs2.mutable.Specification
 import play.api.libs.json._
+import play.core.routing.{PathPattern, Route, StaticPart}
 
 case class Track(name: String, genre: Option[String], artist: Artist, related: Seq[Artist], numbers: Seq[Int])
 case class Artist(name: String, age: Age, spotifyAccount: SpotifyAccount, albums: Albums)
@@ -178,8 +178,6 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       val sidPara = (stationJson \ "parameters").as[JsArray].value(0).as[JsObject]
       (sidPara \ "name").as[String] === "sid"
       (sidPara \ "description").as[String] === "station id"
-      (sidPara \ "type").as[String] === "integer"
-      (sidPara \ "required").as[Boolean] === true
     }
 
     "override generated with comment in" >> {
@@ -367,11 +365,10 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (playTag.get \ "description").asOpt[String] === Some("this is player api")
     }
 
-    "get both body and url params" >> {
+    "get body only" >> {
       val params = (playerAddTrackJson \ "parameters").as[JsArray].value
-      params.length === 2
-      params.map(p => (p \ "name").as[String]).toSet === Set("body", "pid")
-
+      params.length === 1
+      params.map(p => (p \ "name").as[String]).toSet === Set("body")
     }
 
     "get parameter type of" >> {
@@ -753,6 +750,38 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "should retain $refs in 'swagger-custom-mappings'" >> {
       (definitionsJson \ "com.iheart.playSwagger.Child").toOption.isDefined === true
     }
+
+//    "endpointSpec" >> {
+//      "not generate parameters from controller if comment has parameters" >> {
+//        val commentedParamsJson = (pathJson \ "/commented-params" \ "get").as[JsObject]
+//        val params = parametersOf(commentedParamsJson)
+//        params.length mustEqual 1
+//        (params.head \ "name").as[String] mustEqual "p1_comment"
+//      }
+//      "endPointSpec should skip controller parameters when comment has parameters" >> {
+//        val generator = SwaggerSpecGenerator()
+//        val route = Route(
+//          Method("GET"),
+//          PathPattern(Seq(StaticPart("/test"))),
+//          Call("controllers.TestController", "testMethod"),
+//          comments = List(RouteComment("##", Some(""), 0), RouteComment("""{ "parameters": [{ "name": "commentParam", "in": "query", "type": "string" }] }""", Some(""), 1), RouteComment("##", Some(""), 2))
+//        )
+//
+//        val result = generator.endPointSpec(route, Some("test"), "/test")
+//
+//        val parameters = (result \ "parameters").as[JsArray].value
+//        parameters must have size 1
+//        (parameters.head \ "name").as[String] === "commentParam"
+//      }
+
+//      "generate parameters from controller if comment does not have parameters" >> {
+//        val uncommentedParamsJson = (pathJson \ "/uncommented-params" \ "get").as[JsObject]
+//        val params = parametersOf(uncommentedParamsJson)
+//        params.length mustEqual 2
+//        (params.head \ "name").as[String] mustEqual "p1"
+//        (params.last \ "name").as[String] mustEqual "p2"
+//      }
+//    }
   }
 
   "integration v3" >> {
@@ -787,6 +816,19 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
     "properties don't set nullable on non-options" >> {
       (trackJson \ "properties" \ "name" \ "nullable").isEmpty === true
+    }
+
+    "skip controller parameters when comment defines parameters (v3)" >> {
+//      val commentedParamsJson = (pathJson \ "/commented-params" \ "get").as[JsObject]
+
+      val commentedParamsJson = (json \ "paths" \ "/commented-params" \ "get").as[JsObject]
+      print(trackJson)
+      val parameters = (commentedParamsJson \ "parameters").as[JsArray].value
+
+      parameters must have size 1
+      (parameters.head \ "name").as[String] === "p1_comment"
+      (parameters.head \ "in").as[String] === "query"
+      (parameters.head \ "schema" \ "type").as[String] === "string"
     }
   }
 }
